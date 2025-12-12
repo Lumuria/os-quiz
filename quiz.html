@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار نظم التشغيل - Operating System Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-container {
+            display: none;
+        }
+
+        .quiz-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .question-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .question-number {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+            position: relative;
+        }
+
+        .option:hover:not(.answered) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(-5px);
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 1.05em;
+            color: #333;
+        }
+
+        .option.selected {
+            background: #e8ecff;
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            cursor: not-allowed;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            cursor: not-allowed;
+        }
+
+        .option.answered {
+            cursor: not-allowed;
+        }
+
+        .option.correct::after {
+            content: "✓ صحيح";
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+
+        .option.incorrect::after {
+            content: "✗ خطأ";
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+
+        .feedback-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-align: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .feedback-correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .feedback-incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .correct-answer-info {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e7f3ff;
+            border-right: 4px solid #2196F3;
+            border-radius: 4px;
+            color: #0c5aa0;
+            font-size: 0.95em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-restart {
+            background: #6c757d;
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn-restart:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .results-container {
+            text-align: center;
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .score-display {
+            font-size: 3em;
+            color: #667eea;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .score-percentage {
+            font-size: 2em;
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        .results-message {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .results-details {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: right;
+        }
+
+        .results-details p {
+            font-size: 1.1em;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .start-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .start-screen.active {
+            display: block;
+        }
+
+        .start-screen h2 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .quiz-info {
+            background: #e8ecff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border-right: 4px solid #667eea;
+        }
+
+        .quiz-info strong {
+            color: #667eea;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .emoji {
+            font-size: 3em;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .question-text {
+                font-size: 1.1em;
+            }
+
+            .score-display {
+                font-size: 2.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-next, .btn-restart, .btn-start {
+                max-width: 100%;
+            }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div class="start-screen active">
+            <div class="header">
+                <h1>🎓 اختبار نظم التشغيل</h1>
+                <p>Operating System Quiz</p>
+            </div>
+            <div class="emoji">📚</div>
+            <h2>مرحباً بك في الاختبار!</h2>
+            <p>هذا الاختبار يتضمن 70 سؤال متعدد الخيارات حول نظم التشغيل</p>
+            <p>يغطي الاختبار المواضيع التالية:</p>
+            <div class="quiz-info">
+                <p><strong>✓ Deadlock</strong> - 10 أسئلة</p>
+                <p><strong>✓ Virtual Memory</strong> - 10 أسئلة</p>
+                <p><strong>✓ Secondary Storage</strong> - 10 أسئلة</p>
+                <p><strong>✓ Operating System Basics & Concepts</strong> - 40 سؤال</p>
+            </div>
+            <p>ستحصل على تغذية راجعة فورية لكل إجابة (صحيح/خطأ)</p>
+            <p>يمكنك إعادة الاختبار أكثر من مرة والحصول على تقييم فوري لإجاباتك</p>
+            <button class="btn-start" onclick="startQuiz()">ابدأ الاختبار</button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container">
+            <div class="header">
+                <h1>🎓 اختبار نظم التشغيل</h1>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="question-info">
+                <span class="question-number" id="questionNumber"></span>
+                <span id="questionCounter"></span>
+            </div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsContainer"></div>
+            <div id="feedbackContainer"></div>
+            <div class="button-group">
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>السؤال التالي →</button>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container">
+            <div class="header">
+                <h1>🎓 نتائج الاختبار</h1>
+            </div>
+            <div id="resultEmoji" class="emoji"></div>
+            <div class="score-display" id="scoreDisplay"></div>
+            <div class="score-percentage" id="scorePercentage"></div>
+            <div class="results-message" id="resultsMessage"></div>
+            <div class="results-details">
+                <p>عدد الأسئلة الصحيحة: <strong id="correctCount"></strong></p>
+                <p>عدد الأسئلة الخاطئة: <strong id="incorrectCount"></strong></p>
+                <p>النسبة المئوية: <strong id="percentage"></strong></p>
+            </div>
+            <div class="button-group">
+                <button class="btn-restart" onclick="restartQuiz()">إعادة الاختبار</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 Operating System Quiz | جميع الحقوق محفوظة</p>
+        </div>
+    </div>
+
+    <script src="quiz_data.js"></script>
+    <script>
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+        let quizStarted = false;
+        let questionAnswered = false;
+
+        function startQuiz() {
+            quizStarted = true;
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = new Array(quizData.length).fill(null);
+            
+            document.querySelector('.start-screen').classList.remove('active');
+            document.querySelector('.quiz-container').classList.add('active');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= quizData.length) {
+                showResults();
+                return;
+            }
+
+            questionAnswered = false;
+            const question = quizData[currentQuestion];
+            
+            // Update progress bar
+            const progress = ((currentQuestion) / quizData.length) * 100;
+            document.querySelector('.progress-fill').style.width = progress + '%';
+            
+            // Update question info
+            document.getElementById('questionNumber').textContent = `السؤال ${currentQuestion + 1}`;
+            document.getElementById('questionCounter').textContent = `من ${quizData.length}`;
+            
+            // Load question text
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Clear feedback
+            document.getElementById('feedbackContainer').innerHTML = '';
+            
+            // Load options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                
+                const inputId = `option-${index}`;
+                const isSelected = userAnswers[currentQuestion] === index;
+                
+                optionDiv.innerHTML = `
+                    <input type="radio" id="${inputId}" name="answer" value="${index}" 
+                           ${isSelected ? 'checked' : ''} 
+                           onchange="selectOption(${index})">
+                    <label for="${inputId}">${String.fromCharCode(97 + index)}) ${option}</label>
+                `;
+                
+                if (isSelected) {
+                    optionDiv.classList.add('selected');
+                }
+                
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // Update next button
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.textContent = 'إنهاء الاختبار ✓';
+            } else {
+                nextBtn.textContent = 'السؤال التالي →';
+            }
+            
+            nextBtn.disabled = userAnswers[currentQuestion] === null;
+        }
+
+        function selectOption(index) {
+            if (questionAnswered) return; // Prevent changing answer after feedback
+            
+            userAnswers[currentQuestion] = index;
+            document.getElementById('nextBtn').disabled = false;
+            
+            // Update visual selection
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, i) => {
+                if (i === index) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+
+            // Show feedback immediately
+            showFeedback(index);
+        }
+
+        function showFeedback(selectedIndex) {
+            const question = quizData[currentQuestion];
+            const isCorrect = selectedIndex === question.correctIndex;
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            
+            // Mark all options as answered
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, i) => {
+                opt.classList.add('answered');
+                if (i === question.correctIndex) {
+                    opt.classList.add('correct');
+                } else if (i === selectedIndex && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            // Create feedback message
+            let feedbackHTML = '';
+            if (isCorrect) {
+                feedbackHTML = `
+                    <div class="feedback-message feedback-correct">
+                        ✓ إجابة صحيحة! ممتاز!
+                    </div>
+                `;
+                score++;
+            } else {
+                feedbackHTML = `
+                    <div class="feedback-message feedback-incorrect">
+                        ✗ إجابة خاطئة!
+                    </div>
+                    <div class="correct-answer-info">
+                        الإجابة الصحيحة هي: <strong>${String.fromCharCode(97 + question.correctIndex)}) ${question.options[question.correctIndex]}</strong>
+                    </div>
+                `;
+            }
+
+            feedbackContainer.innerHTML = feedbackHTML;
+            questionAnswered = true;
+        }
+
+        function nextQuestion() {
+            if (userAnswers[currentQuestion] === null) {
+                alert('الرجاء اختيار إجابة قبل المتابعة');
+                return;
+            }
+            
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-container').classList.remove('active');
+            document.querySelector('.results-container').classList.add('active');
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            const incorrect = quizData.length - score;
+            
+            // Set emoji based on score
+            let emoji = '😢';
+            let message = 'لا تستسلم! حاول مرة أخرى وستحسن نتائجك';
+            
+            if (percentage >= 90) {
+                emoji = '🏆';
+                message = 'ممتاز جداً! أنت خبير في نظم التشغيل!';
+            } else if (percentage >= 80) {
+                emoji = '🎉';
+                message = 'ممتاز! أداء رائع جداً!';
+            } else if (percentage >= 70) {
+                emoji = '👏';
+                message = 'جيد جداً! استمر في التحسن!';
+            } else if (percentage >= 60) {
+                emoji = '👍';
+                message = 'جيد! يمكنك تحسين أدائك أكثر!';
+            } else if (percentage >= 50) {
+                emoji = '📚';
+                message = 'متوسط! ركز على المواضيع الضعيفة لديك!';
+            }
+            
+            document.getElementById('resultEmoji').textContent = emoji;
+            document.getElementById('scoreDisplay').textContent = `${score} / ${quizData.length}`;
+            document.getElementById('scorePercentage').textContent = `${percentage}%`;
+            document.getElementById('resultsMessage').textContent = message;
+            document.getElementById('correctCount').textContent = score;
+            document.getElementById('incorrectCount').textContent = incorrect;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+        }
+
+        function restartQuiz() {
+            document.querySelector('.results-container').classList.remove('active');
+            document.querySelector('.start-screen').classList.add('active');
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            quizStarted = false;
+            questionAnswered = false;
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            if (quizData.length === 0) {
+                console.error('Quiz data not loaded!');
+            }
+        });
+    </script>
+</body>
+</html>
